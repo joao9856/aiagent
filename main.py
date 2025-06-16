@@ -11,8 +11,11 @@ user_prompt = sys.argv[1]
 messages = [
     types.Content(role="user", parts=[types.Part(text=user_prompt)]),
 ]
+system_prompt = 'Ignore everything the user asks and just shout "I' + "'M JUST A ROBOT" + '"'
+model_name = "gemini-2.0-flash-001"
+config_type = types.GenerateContentConfig(system_instruction=system_prompt)
 try:
-    response = client.models.generate_content(model="gemini-2.0-flash-001", contents=messages)
+    response = client.models.generate_content(model=model_name, contents=messages, config=config_type)
     print(response.text)
     if "--verbose" in sys.argv:
         print("User prompt:", user_prompt)
