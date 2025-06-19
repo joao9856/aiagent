@@ -7,9 +7,8 @@ def write_file(working_directory, file_path, content):
         file = os.path.abspath(os.path.join(working_directory, file_path))
         if file.startswith(wkd) == False:
             return f'Error: Cannot read "{file_path}" as it is outside the permitted working directory'
-        if os.path.exists(file) == False:
+        if os.path.exists(file.rstrip(file_path)) == False:
             os.makedirs(file.rstrip(file_path))
-            #os.fil(file)
         with open(file, "w") as f:
             f.write(content)
         f.close()
