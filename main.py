@@ -31,7 +31,7 @@ def main():
     messages = [
         types.Content(role="user", parts=[types.Part(text=user_prompt)]),
     ]
-
+    
     generate_content(client, messages, verbose)
 
 
@@ -39,24 +39,32 @@ def generate_content(client, messages, verbose):
     model_name = "gemini-2.0-flash-001"
     config_type = types.GenerateContentConfig(tools=[available_functions], system_instruction=system_prompt)
     
+    for i in range(20):
 
-    try:
-        response = client.models.generate_content(model=model_name, contents=messages, config=config_type)
-        if not response.function_calls:
-            return response.text
-        for function_call_part in response.function_calls:
-            function_call_response = call_function(function_call_part, verbose)
-            if not function_call_response.parts[0].function_response.response:
-                raise Exception("Missing response")
+        try:
+            response = client.models.generate_content(model=model_name, contents=messages, config=config_type)
+            for candidate in response.candidates:
+                messages.append(candidate.content)
+            if not response.function_calls:
+                print(response.text)
+                break
+            for function_call_part in response.function_calls:
+                function_call_response = call_function(function_call_part, verbose)
+                if not function_call_response.parts[0].function_response.response:
+                    raise Exception("Missing response")
+                messages.append(function_call_response)
+                if verbose:
+                    print(function_call_response.parts[0].function_response.response)
             if verbose:
-                 print(function_call_response.parts[0].function_response.response)
-        if verbose:
 
-            print("Prompt tokens:", response.usage_metadata.prompt_token_count)
-            print("Response tokens:", response.usage_metadata.candidates_token_count)
-    except Exception as e:
-        print(f"Error: {e}")
-        exit(1)
+                print("Prompt tokens:", response.usage_metadata.prompt_token_count)
+                print("Response tokens:", response.usage_metadata.candidates_token_count)
+            if i == 19:
+                print(response.text)
+                break
+        except Exception as e:
+            print(f"Error: {e}")
+            exit(1)
 
 if __name__ == "__main__":
     main()
